@@ -16,9 +16,8 @@ for root, dirs, files in os.walk(path):
         # Saving the old columns to act as reference the labels
         df = df.with_columns(
             pl.col("Sex").map_batches(enc.fit_transform).alias("Sex_encoded"),
-            pl.col("BP").map_batches(enc.fit_transform).alias("BP_encoded"),
             pl.col("Cholesterol").map_batches(enc.fit_transform).alias("Cholesterol_encoded"),
-            pl.col("Drug").map_batches(enc.fit_transform).alias("Drug_encoded"),
         )
+        df = df.to_dummies("BP")
         # Saving file at the data folder
         df.write_csv("data/multiclass_drug.csv")

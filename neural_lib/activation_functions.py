@@ -1,6 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
-
 
 # Função sigmoid
 def sigmoid(x):
