@@ -8,7 +8,7 @@ class NeuralNetwork:
     Implementa uma rede neural artificial do tipo Perceptron Multicamadas (MLP).
     """
     def __init__(self, num_input_neurons, hidden_layer_sizes, num_output_neurons, 
-                 activation_function='relu'):
+                 activation_function='relu', output_activation_function='relu'):
         """Inicializa a arquitetura da rede, os pesos e os viéses.
 
         Args:
@@ -17,13 +17,16 @@ class NeuralNetwork:
             hidden_layer_sizes (list[int]): Uma lista contendo o número de neurônios para cada
                 camada oculta. Ex: [10, 5] para duas camadas ocultas.
             num_output_neurons (int): O número de neurônios na camada de saída.
-            activation_function (str, optional): O nome da função de ativação a ser usada
-                em todas as camadas. Defaults to 'relu'. Opções: 'relu', 'sigmoid' e 'tanh'.
+            activation_function (str, optional): O nome da função de ativação a ser usada nas camadas intermediárias
+                Default: 'relu'. Opções: 'relu', 'sigmoid' e 'tanh'.
+            output_activation_function (str, optional): O nome da função de ativação a ser usada na camada de saída
+                Defaults: 'relu'. Opções: 'relu', 'sigmoid' e 'tanh'.    
         """
 
         # Transforma a configuração das camadas da rede em uma só propriedade.
         self.layers_config = [num_input_neurons] + hidden_layer_sizes + [num_output_neurons]
         self.activation_function_name = activation_function
+        self.output_activation_function_name = output_activation_function
         
         self.weights = []
         self.biases = []
@@ -69,7 +72,11 @@ class NeuralNetwork:
         
         activation_func = self.activations[self.activation_function_name]
 
-        for l in range(len(self.weights)):
+        output_activation_func = self.activations[self.output_activation_function_name]
+
+        weigth_length = len(self.weights);
+
+        for l in range(weigth_length):
             W = self.weights[l]
             b = self.biases[l]
             y_anterior = current_y
@@ -78,7 +85,12 @@ class NeuralNetwork:
             v = np.dot(W.T, y_anterior) + b
             
             # Aplica a função de ativação não-linear.
-            current_y = activation_func(v)
+            # Se for a última camada usa função de ativação da saída.
+            # Senão utiliza função de ativação de camada oculta.
+            if (l == weigth_length - 1):
+                current_y = output_activation_func(v)
+            else:
+                current_y = activation_func(v)
             
             cache[f'v{l+1}'] = v
             cache[f'y{l+1}'] = current_y
