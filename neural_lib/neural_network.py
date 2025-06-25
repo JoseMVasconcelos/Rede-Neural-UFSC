@@ -74,9 +74,9 @@ class NeuralNetwork:
 
         output_activation_func = self.activations[self.output_activation_function_name]
 
-        weigth_length = len(self.weights);
+        weights_length = len(self.weights);
 
-        for l in range(weigth_length):
+        for l in range(weights_length):
             W = self.weights[l]
             b = self.biases[l]
             y_anterior = current_y
@@ -87,7 +87,7 @@ class NeuralNetwork:
             # Aplica a função de ativação não-linear.
             # Se for a última camada usa função de ativação da saída.
             # Senão utiliza função de ativação de camada oculta.
-            if (l == weigth_length - 1):
+            if (l == weights_length - 1):
                 current_y = output_activation_func(v)
             else:
                 current_y = activation_func(v)
