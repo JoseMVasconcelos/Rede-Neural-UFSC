@@ -8,7 +8,7 @@ class NeuralNetwork:
     Implementa uma rede neural artificial do tipo Perceptron Multicamadas (MLP).
     """
     def __init__(self, num_input_neurons, hidden_layer_sizes, num_output_neurons, 
-                 activation_function='relu', output_activation_function='relu'):
+                 activation_function='relu', output_activation_function='identity'):
         """Inicializa a arquitetura da rede, os pesos e os viéses.
 
         Args:
@@ -18,9 +18,9 @@ class NeuralNetwork:
                 camada oculta. Ex: [10, 5] para duas camadas ocultas.
             num_output_neurons (int): O número de neurônios na camada de saída.
             activation_function (str, optional): O nome da função de ativação a ser usada nas camadas intermediárias
-                Default: 'relu'. Opções: 'relu', 'sigmoid' e 'tanh'.
+                Default: 'relu'. Opções: 'relu', 'sigmoid', 'tanh' e 'identity'.
             output_activation_function (str, optional): O nome da função de ativação a ser usada na camada de saída
-                Defaults: 'relu'. Opções: 'relu', 'sigmoid' e 'tanh'.    
+                Default: 'identity'. Opções: 'relu', 'sigmoid', 'tanh' e 'identity'.    
         """
 
         # Transforma a configuração das camadas da rede em uma só propriedade.
@@ -34,7 +34,8 @@ class NeuralNetwork:
         self.activations = {
             'sigmoid': activation_functions.sigmoid,
             'relu': activation_functions.relu,
-            'tanh': activation_functions.tanh
+            'tanh': activation_functions.tanh,
+            'identity': activation_functions.identity
         }
         
         # Itera a partir da primeira camada oculta para criar os pesos e viéses que conectam cada camada à sua anterior.

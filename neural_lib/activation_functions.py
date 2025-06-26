@@ -21,3 +21,10 @@ def tanh(x):
 
 def tanh_derivative(x):
     return 1 - tanh(x)**2
+
+#Função identidade (Codada apenas pra ficar mais fácil na rede)
+def identity(x):
+    return x
+
+def identity_derivative():
+    return 1
