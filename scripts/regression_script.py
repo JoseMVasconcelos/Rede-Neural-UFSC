@@ -5,7 +5,7 @@ from sklearn.preprocessing import StandardScaler
 
 file_path = ""
 
-path = kagglehub.dataset_download("vipullrathod/fish-market");
+path = kagglehub.dataset_download("vipullrathod/fish-market")
 
 for root, dirs, files in os.walk(path):
   for file in files:
