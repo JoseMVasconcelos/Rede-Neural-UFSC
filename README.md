@@ -23,7 +23,7 @@ https://github.com/JoseMVasconcelos/Rede-Neural-UFSC/blob/953485dd165e47e5c8e366
 
 ## Treinamento de Modelos com a Neural Network Library
 
-Foram treinados três modelos de predição para regressão, classificação binária e classificação multiclasse com a biblioteca implementada. Os seguintes _datasets_ foram utilizados para os treinamentos:
+Foram treinados três modelos de predição para regressão, classificação binária e classificação multiclasse com a biblioteca desenvolvida. Os seguintes _datasets_ foram utilizados para os treinamentos:
 
 - [`regression_fish.csv`](./data/regression_fish.csv) - Regressão
 - [`customer-purchase-behavior.csv`](./data/customer-purchase-behavior.csv) - Classificação Binária
