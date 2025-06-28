@@ -28,13 +28,13 @@ def load_and_preprocess(csv_path):
     X = preprocessor.fit_transform(X_raw)
     return X, y
 
-def train_model(X_train, y_train, hidden_layers, epochs):
+def train_model(X_train, y_train, hidden_layers, epochs, activation_function):
     input_size = X_train.shape[1]
     neural_network = NeuralNetwork(
         num_input_neurons=input_size,
         hidden_layer_sizes=hidden_layers,
+        activation_function=activation_function,
         num_output_neurons=1,
-        activation_function='relu',
         output_activation_function='sigmoid',
         loss_function='binary'
     )
@@ -48,6 +48,18 @@ def evaluate_model(neural_network, X_test, y_test):
     accuracy = np.mean(results == y_test)
     print(f'Test Accuracy: {accuracy * 100:.2f}%')
 
+def get_params():
+    return [
+        {'hidden_layers': [32, 16], 'activation_function': 'relu',    'epochs': 100},
+        {'hidden_layers': [32, 16], 'activation_function': 'tanh',    'epochs': 100},
+
+        {'hidden_layers': [64, 32, 16], 'activation_function': 'relu',    'epochs': 200},
+        {'hidden_layers': [64, 32, 16], 'activation_function': 'tanh',    'epochs': 200},
+
+        {'hidden_layers': [128, 64, 32], 'activation_function': 'relu',    'epochs': 300},
+        {'hidden_layers': [128, 64, 32], 'activation_function': 'tanh',    'epochs': 300},
+    ]
+
 def main():
     X, y = load_and_preprocess('./../data/customer-purchase-behavior.csv')
 
@@ -55,10 +67,15 @@ def main():
         X, y, test_size=0.2, random_state=42
     )
 
-    hidden_layers = [16, 8]
-    epochs = 100
-    neural_network = train_model(X_train, y_train, hidden_layers, epochs)
-    evaluate_model(neural_network, X_test, y_test)
+    for params in get_params():
+        neural_network = train_model(
+            X_train, y_train,
+            params['hidden_layers'],
+            params['epochs'],
+            params['activation_function']
+        )
+        evaluate_model(neural_network, X_test, y_test)
 
 if __name__ == '__main__':
     main()
+
