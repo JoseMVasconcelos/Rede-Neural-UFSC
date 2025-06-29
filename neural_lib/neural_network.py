@@ -1,170 +1,206 @@
-# neural_lib/network.py
-
 import numpy as np
-from . import activation_functions
-from . import loss_functions
+import activation_functions
+import loss_functions
 
-class NeuralNetwork:
-    """
-    Implementa uma rede neural artificial do tipo Perceptron Multicamadas (MLP).
-    """
-    def __init__(self, num_input_neurons, hidden_layer_sizes, num_output_neurons, 
-                 activation_function='relu', output_activation_function='identity', loss_function='mse'):
-        """Inicializa a arquitetura da rede, os pesos e os viéses.
+class NeuralNetwork():
+    def __init__(self, input_size, hidden_sizes, output_size, activation, output_activation, loss):
+        self.activation_name = activation
+        self.output_activation_name = output_activation
+        self.loss_function_name = loss
 
-        Args:
-            num_input_neurons (int): O número de neurônios na camada de entrada, que deve
-                corresponder ao número de features dos dados.
-            hidden_layer_sizes (list[int]): Uma lista contendo o número de neurônios para cada
-                camada oculta. Ex: [10, 5] para duas camadas ocultas.
-            num_output_neurons (int): O número de neurônios na camada de saída.
-            activation_function (str, optional): O nome da função de ativação a ser usada nas camadas intermediárias
-                Default: 'relu'. Opções: 'relu', 'sigmoid', 'tanh', 'identity' e 'softmax'.
-            output_activation_function (str, optional): O nome da função de ativação a ser usada na camada de saída
-                Default: 'identity'. Opções: 'relu', 'sigmoid', 'tanh', 'identity' e 'softmax'.    
-        """
-
-        # Transforma a configuração das camadas da rede em uma só propriedade.
-        self.layers_config = [num_input_neurons] + hidden_layer_sizes + [num_output_neurons]
-        self.activation_function_name = activation_function
-        self.output_activation_function_name = output_activation_function
-        self.loss_function = loss_function
-        
         self.weights = []
         self.biases = []
-        self.dW = []
-        self.db = []
 
-        self.activations = {
-            'sigmoid': activation_functions.sigmoid,
-            'relu': activation_functions.relu,
-            'tanh': activation_functions.tanh,
-            'identity': activation_functions.identity,
-            'softmax': activation_functions.softmax
-        }
+        #Iniciando pesos e vieses da primeira camada
+        self.weights.append(np.random.rand(input_size, hidden_sizes[0]))
+        self.biases.append(np.zeros((hidden_sizes[0], 1)))
 
-        self.act_derivatives = {
-            'sigmoid': activation_functions.sigmoid_derivative,
-            'relu': activation_functions.relu_derivative,
-            'tanh': activation_functions.tanh_derivative,
-            'identity': activation_functions.identity_derivative,
-            'softmax': activation_functions.softmax_derivative
-        }
+        #Iniciando pesos e vieses das camadas após a primeira, e antes da ultima
+        for i in range(1, len(hidden_sizes)):
+            self.weights.append(np.random.rand(hidden_sizes[i-1], hidden_sizes[i]))
+            self.biases.append(np.zeros((hidden_sizes[i], 1)))
 
-        self.loss = {
-            'mse': loss_functions.mean_squared_error,
-            'binary': loss_functions.binary_crossentropy,
-            'multiclass': loss_functions.multiclass_crossentropy
-        }
+        #Iniciando pesos e vieses da camada de output
+        self.weights.append(np.random.rand(hidden_sizes[-1], output_size))
+        self.biases.append(np.zeros((output_size, 1)))
 
-        self.loss_derivative = {
-            'mse': loss_functions.mean_squared_error_derivative,
-            'binary': loss_functions.binary_crossentropy_derivative,
-            'multiclass': loss_functions.multiclass_crossentropy_derivative
-        }
-        
-        # Itera a partir da primeira camada oculta para criar os pesos e viéses que conectam cada camada à sua anterior.
-        for i in range(1, len(self.layers_config)):
-            w = np.random.randn(self.layers_config[i-1], self.layers_config[i]) * np.sqrt(1 / self.layers_config[i-1])
-            b = np.zeros((self.layers_config[i], 1))
-            self.weights.append(w)
-            self.biases.append(b)
 
-    def feedforward(self, input_data):
-        """Executa a propagação para frente (forward pass) na rede.
+    def get_activation_function(self, function_name, derivative):
+        if derivative:
+            match function_name:
+                case "relu":
+                    return activation_functions.relu_derivative
+                case "tanh":
+                    return activation_functions.tanh_derivative
+                case "sigmoid":
+                    return activation_functions.sigmoid_derivative
+                case "softmax":
+                    return 0
+                case "identity":
+                    return activation_functions.identity_derivative
+        else:
+            match function_name:
+                case "relu":
+                    return activation_functions.relu
+                case "tanh":
+                    return activation_functions.tanh
+                case "sigmoid":
+                    return activation_functions.sigmoid
+                case "softmax":
+                    return activation_functions.softmax
+                case "identity":
+                    return activation_functions.identity
+                
+    def get_loss_function(self, loss_name, derivative):
+        if derivative:
+            match loss_name:
+                case "mse":
+                    return loss_functions.mse_derivative
+                case "binary":
+                    return loss_functions.binary_crossentropy_derivative
+                case "multiclass":
+                    return loss_functions.multiclass_crossentropy_derivative
+        else:
+            match loss_name:
+                case "mse":
+                    return loss_functions.mse
+                case "binary":
+                    return loss_functions.binary_crossentropy
+                case "multiclass":
+                    return loss_functions.multiclass_crossentropy
 
-        Args:
-            input_data (np.array): Um array NumPy com os dados de entrada, onde cada linha
-                é uma amostra e cada coluna é uma feature. 
-                Dimensão esperada: (n_amostras, n_features_entrada).
 
-        Returns:
-            tuple[np.array, dict]: Uma tupla contendo:
-                - y_hat (np.array): A matriz de predições da rede no formato (n_amostras, n_features_saida).
-                - cache (dict): Um dicionário com os valores intermediários (v e y) de cada
-                  camada, necessário para o backpropagation.
-        """
-        # Transpõe a entrada para a convenção interna da rede: (n_features, n_amostras).
-        current_y = input_data.T
-        
-        activation_func = self.activations[self.activation_function_name]
-        output_activation_func = self.activations[self.output_activation_function_name]
 
+    def feedfoward(self, x_sample):
+        y_predicted = x_sample.T
+        cache_stack = [y_predicted]
         for l in range(len(self.weights)):
-            # Calcula a combinação linear, conforme a fórmula v = W.T * X + b.
-            v = np.dot(self.weights[l].T, current_y) + self.biases[l]
-            
-            # Aplica a função de ativação não-linear.
-            # Se for a última camada usa função de ativação da saída.
-            # Senão utiliza função de ativação de camada oculta.
+            v = np.dot(self.weights[l].T, y_predicted) + self.biases[l]
             if (l == len(self.weights) - 1):
-                current_y = output_activation_func(v)
+                y_predicted = self.get_activation_function(self.output_activation_name, False)(v)
             else:
-                current_y = activation_func(v)
-        
-        # Transpõe a saída final para o formato padrão (n_amostras, n_features_saida).
-        return current_y.T
-    
-    def backpropagate(self, y_hat, input_data, expected_output):
-        current_y = input_data.T
+                y_predicted = self.get_activation_function(self.activation_name, False)(v)
+            cache_stack.append(v)
+            cache_stack.append(y_predicted)
 
-        intermediate_values = {'y0': input_data.T}
-        loss_function_derivative = self.loss_derivative[self.loss_function]
-        activation_func = self.activations[self.activation_function_name]
-        output_activation_func = self.act_derivatives[self.output_activation_function_name]
+        return y_predicted.T, cache_stack
 
-        for l in range(len(self.weights)):
-            v = np.dot(self.weights[l].T, current_y) + self.biases[l]
-            if (l == len(self.weights) - 1):
-                current_y = output_activation_func(v)
-            else:
-                current_y = activation_func(v)
-            intermediate_values[f'v{l+1}'] = v
-            intermediate_values[f'y{l+1}'] = current_y
-
-        self.dW = [np.zeros_like(w) for w in self.weights]
-        self.db = [np.zeros_like(b) for b in self.biases]
-
-        v_output = intermediate_values[f'v{len(self.weights)}']
-        delta = (y_hat.T - expected_output.T) * output_activation_func(v_output)
-
+    def backpropagate(self, predicted_y, x_sample, y_sample, cache):
+        for data in cache:
+            print(data.shape)
         for l in reversed(range(len(self.weights))):
-            y_previous = intermediate_values[f'y{l}']
+            if l == len(self.weights)-1:
+                #Output error is the E/X derived
+                #the return of the loss function derived is E/Y derived
+                if self.loss_function_name == "binary":
+                    output_error = self.get_loss_function("binary", True)(y_sample, cache.pop()) * self.get_activation_function("sigmoid", True)(cache.pop())
+                if self.loss_function_name == "multiclass":
+                    output_error = self.get_loss_function("multiclass", True)(y_sample, cache.pop())
+                    cache.pop()
+                if self.loss_function_name == "mse":
+                    output_error = self.get_loss_function("mse", True)(y_sample, cache.pop()) * self.get_activation_function("identity", True)(cache.pop())
 
-            self.dW[l] = np.dot(y_previous, delta.T)
-            self.db[l] = np.sum(delta, axis=1, keepdims=True)
+                #Weight error derived is the E/W derived
+                weight_error_derived = np.dot(cache.pop(), output_error.T)
+
+
+                self.weights[l] -= weight_error_derived
+                self.biases[l] -= np.sum(output_error, axis=0, keepdims=True)
+
+                output_error = np.dot(self.weights[l], output_error)
             
-            if l > 0:
-                W_current = self.weights[l]
-                v_prev_layer = intermediate_values[f'v{l}']
-                activation_derivative = self.act_derivatives[self.activation_function_name]
-                delta = np.dot(W_current, delta) * activation_derivative(v_prev_layer)
+            else:
+                if self.activation_name == 'relu':
+                    output_error = output_error * self.get_activation_function("relu", True)(cache.pop())
+                if self.activation_name == 'tanh':
+                    output_error = output_error * self.get_activation_function("tanh", True)(cache.pop())
 
-    def update_weights(self):
-        for l in range(len(self.weights)):
-            self.weights[l] -= self.dW[l]
-            self.biases[l] -= self.db[l]
+                weight_error_derived = np.dot(cache.pop(), output_error.T)
+                self.weights[l] -= weight_error_derived
+                self.biases[l] -= np.sum(output_error, axis=0, keepdims=True)
+
+
 
     def train(self, input_data, input_label, epochs):
-        for j in range(epochs):
-            i = j % len(input_data)
+        loss_history = []
+        accuracy_history = []
+
+        for epoch in range(epochs):
+            i = epoch % len(input_data)
+
             if input_data[i].ndim == 1:
-                sample = input_data[i].reshape(1, -1)
+                x_sample = input_data[i].reshape(1, -1)
             else:
-                sample = input_data[i]
+                x_sample = input_data[i]
 
-            label = input_label[i].reshape(1)
-            predicted_y = self.feedforward(sample)
-            self.backpropagate(predicted_y, sample, label)
-            self.update_weights()
-            
+            if input_label[i].ndim == 1:
+                y_sample = input_label[i].reshape(1, -1)
+            else:
+                y_sample = input_label[i]
 
-    def predict(self, input_data):
-        if input_data.ndim == 1:
-            input_data = input_data.reshape(1, -1)
-        else:
-            input_data = input_data
-        y_hat = self.feedforward(input_data)
-        return y_hat
+            predicted_y, cache = self.feedfoward(x_sample)
+            train_loss = self.get_loss_function(self.loss_function_name, False)(y_sample, predicted_y)
+            loss_history.append(train_loss)
 
-    
+            if self.loss_function_name == "binary":
+                accuracy = (np.mean((predicted_y) > 0.5).astype(int) == y_sample) * 1
+                print(f"Predicted class: {np.mean((predicted_y) > 0.5).astype(int)}")
+                print(f"True Class: {y_sample[0][0]}")
+                accuracy_history.append(accuracy)
+
+            self.backpropagate(predicted_y, x_sample, y_sample, cache)
+
+        if self.loss_function_name == "binary":
+            correct = accuracy_history.count(True)
+            total = len(accuracy_history)
+            acc = (correct/total)*100
+            print(f"Accuracy on last epoch {acc}")
+        
+    def predict(self, input_data, input_label):
+        accuracy_history = []
+
+        for i in range(len(input_data)):
+            if input_data[i].ndim == 1:
+                x_sample = input_data[i].reshape(1, -1)
+            else:
+                x_sample = input_data[i]
+
+            if input_label[i].ndim == 1:
+                y_sample = input_label[i].reshape(1, -1)
+            else:
+                y_sample = input_label[i]
+
+            predicted_y, _ = self.feedfoward(x_sample)
+
+            if self.loss_function_name == "binary":
+                    accuracy = (np.mean((predicted_y) > 0.5).astype(int) == y_sample) * 1
+                    print()
+                    print(f"Predicted class: {np.mean((predicted_y) > 0.5).astype(int)} -> True Class: {y_sample[0][0]}")
+                    accuracy_history.append(accuracy)
+
+        
+        if self.loss_function_name == "binary":
+            correct = accuracy_history.count(True)
+            total = len(accuracy_history)
+            acc = (correct/total)*100
+            print(f"Accuracy on last epoch {acc}")
+
+
+
+ann = NeuralNetwork(
+    input_size=2,
+    hidden_sizes=[4],
+    output_size=1,
+    activation="tanh",
+    output_activation="sigmoid",
+    loss="binary"
+)
+
+X_input = np.array([[0, 0], [0, 1], [1, 0], [1, 1]])
+y_input = np.array([[0] ,[1] ,[1] ,[0]])
+
+
+
+ann.train(X_input, y_input, 1000)
+
+ann.predict(X_input, y_input)
