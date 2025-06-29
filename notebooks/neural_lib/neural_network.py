@@ -17,11 +17,11 @@ class NeuralNetwork():
 
         #Iniciando pesos e vieses das camadas após a primeira, e antes da ultima
         for i in range(1, len(hidden_sizes)):
-            self.weights.append(np.random.randn(hidden_sizes[i-1], hidden_sizes[i]) * np.sqrt(2 / input_size))
+            self.weights.append(np.random.randn(hidden_sizes[i-1], hidden_sizes[i]) * np.sqrt(2 / hidden_sizes[i-1]))
             self.biases.append(np.zeros((hidden_sizes[i], 1)))
 
         #Iniciando pesos e vieses da camada de output
-        self.weights.append(np.random.randn(hidden_sizes[-1], output_size) * np.sqrt(2 / input_size))
+        self.weights.append(np.random.randn(hidden_sizes[-1], output_size) * np.sqrt(2 / hidden_sizes[-1]))
         self.biases.append(np.zeros((output_size, 1)))
 
 
@@ -73,9 +73,10 @@ class NeuralNetwork():
 
     def feedfoward(self, x_sample):
         y_predicted = x_sample.T
+
         cache_stack = []
         for l in range(len(self.weights)):
-            v = np.dot(self.weights[l].T, y_predicted) + self.biases[l]
+            v = np.dot(self.weights[l].T ,y_predicted) + self.biases[l]
             if (l == len(self.weights) - 1):
                 y_predicted = self.get_activation_function(self.output_activation_name, False)(v)
             else:
@@ -118,39 +119,6 @@ class NeuralNetwork():
             self.biases[l] -= db[l]
 
 
-        # for l in reversed(range(len(self.weights))):
-        #     if l == len(self.weights)-1:
-        #         #Output error is the E/X derived
-        #         #the return of the loss function derived is E/Y derived
-
-        #         ## Camada de ativação da ultima camada
-        #         if self.loss_function_name == "binary":
-        #             output_error = self.get_loss_function("binary", True)(y_sample, cache.pop()) * self.get_activation_function("sigmoid", True)(cache.pop())
-        #         if self.loss_function_name == "multiclass":
-        #             output_error = self.get_loss_function("multiclass", True)(y_sample, cache.pop())
-        #             cache.pop()
-        #         if self.loss_function_name == "mse":
-        #             output_error = self.get_loss_function("mse", True)(y_sample, cache.pop()) * self.get_activation_function("identity", True)(cache.pop())
-            
-        #     else:
-        #         if self.activation_name == 'relu':
-        #             output_error = output_error * self.get_activation_function("relu", True)(cache.pop())
-        #         if self.activation_name == 'tanh':
-        #             output_error = output_error * self.get_activation_function("tanh", True)(cache.pop())
-
-        #     weight_error_derived = np.dot(cache.pop(), output_error.T)
-
-        #     dw[l] = learning_rate * weight_error_derived
-        #     db[l] = learning_rate * np.sum(output_error, axis=1, keepdims=True)
-            
-            
-        #     output_error = np.dot(self.weights[l], output_error)
-
-        # for l in reversed(range(len(self.weights))):
-        #     self.weights[l] -= dw[l]
-        #     self.biases[l] -= db[l]
-
-
     def train(self, input_data, input_label, epochs, learning_rate=0.001):
         loss_history = []
         accuracy_history = []
@@ -175,9 +143,6 @@ class NeuralNetwork():
 
             self.backpropagate(y_sample, cache, x_sample, learning_rate)
 
-            if epoch % 10 == 0:
-                print(f"Epoch {epoch} -> Train Loss: {train_loss:.4f}")
-
 
         if self.loss_function_name == "mse":
             se = self.get_loss_function("mse", False)(input_label[:epoch], pred_history)
@@ -190,14 +155,10 @@ class NeuralNetwork():
                     accuracy = np.mean(np.argmax(prediction, axis=1) == y_sample) * 1
                     accuracy_history.append(accuracy)
 
-                
-
-
         if self.loss_function_name == 'binary' or self.loss_function_name == 'multiclass':
             correct = accuracy_history.count(True)
             total = len(accuracy_history)
             acc = (correct/total)*100
-            print(f"Accuracy on last epoch {acc}")
         
     def predict(self, input_data, input_label):
         accuracy_history = []
@@ -216,11 +177,8 @@ class NeuralNetwork():
 
             if self.loss_function_name == "binary":
                     accuracy = (np.mean((predicted_y) > 0.5).astype(int) == y_sample) * 1
-                    # print()
-                    # print(f"Predicted class: {np.mean((predicted_y) > 0.5).astype(int)} -> True Class: {y_sample[0][0]}")
                     accuracy_history.append(accuracy)
             if self.loss_function_name == "multiclass":
-                print(predicted_y)
                 accuracy = np.mean(np.argmax(predicted_y, axis=1) == y_sample) * 1
                 accuracy_history.append(accuracy)
 
@@ -230,6 +188,7 @@ class NeuralNetwork():
             total = len(accuracy_history)
             acc = (correct/total)*100
             return acc
+        
         if self.loss_function_name == "multiclass":
             correct = accuracy_history.count(True)
             total = len(accuracy_history)
