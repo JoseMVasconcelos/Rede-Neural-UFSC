@@ -9,6 +9,8 @@ def mse_derivative(true_y, predicted_y):
 
 # Função de entropia cruzada binária
 def binary_crossentropy(true_y, predicted_y):
+    epsilon = 1e-15
+    predicted_y = np.clip(predicted_y, epsilon, 1 - epsilon)
     return -np.mean(true_y * np.log(predicted_y) + (1 - true_y) * np.log(1 - predicted_y))
 
 def binary_crossentropy_derivative(true_y, predicted_y):
