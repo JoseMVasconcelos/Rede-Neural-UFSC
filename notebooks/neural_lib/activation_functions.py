@@ -30,5 +30,6 @@ def identity_derivative(x):
     return np.ones_like(x)
 
 def softmax(x):
+    x = x.T
     e_x = np.exp(x - np.max(x, axis=1, keepdims=True))
-    return e_x / np.sum(e_x, axis=1, keepdims=True)
+    return (e_x / np.sum(e_x, axis=1, keepdims=True)).T
