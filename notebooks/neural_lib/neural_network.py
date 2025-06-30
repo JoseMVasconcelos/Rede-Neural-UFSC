@@ -160,7 +160,6 @@ class NeuralNetwork():
             total = len(accuracy_history)
             acc = (correct/total)*100
         
-    # Substitua o método predict por este:
     def predict(self, input_data, input_label=None):
         accuracy_history = []
         prediction_history = []
@@ -171,11 +170,9 @@ class NeuralNetwork():
             else:
                 x_sample = input_data[i]
 
-            # 1. Faz a predição PRIMEIRO, para ter o resultado independentemente do tipo de problema
             predicted_y, _ = self.feedfoward(x_sample)
             prediction_history.append(predicted_y.flatten())
 
-            # 2. SÓ DEPOIS, se as labels foram fornecidas (classificação), calcula a acurácia
             if input_label is not None:
                 if input_label[i].ndim == 1 or np.array(input_label[i]).ndim == 0:
                     y_sample = input_label[i].reshape(1, -1)
@@ -189,7 +186,6 @@ class NeuralNetwork():
                     accuracy = np.mean(np.argmax(predicted_y, axis=1) == y_sample) * 1
                     accuracy_history.append(accuracy)
 
-        # 3. Decide o que retornar com base na função de perda
         if self.loss_function_name == "mse":
             return np.concatenate(prediction_history)
         
@@ -197,7 +193,7 @@ class NeuralNetwork():
             correct = accuracy_history.count(True)
             total = len(accuracy_history)
             if total == 0:
-                return 0 # Evita divisão por zero se o input_label não for passado
+                return 0
             acc = (correct/total) * 100
             return acc
 
