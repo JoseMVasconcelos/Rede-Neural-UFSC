@@ -3,7 +3,25 @@ from . import activation_functions
 from . import loss_functions
 
 class NeuralNetwork():
+    """
+    Esta classe implementa uma Rede Neural Artificial do tipo Perceptron Multicamadas (MLP).
+    """
     def __init__(self, input_size, hidden_sizes, output_size, activation, output_activation, loss):
+        """
+        Inicializa e constrói a arquitetura da rede neural.
+
+        Args:
+            input_size (int): O número de neurônios na camada de entrada.
+            hidden_sizes (list of int): Uma lista de inteiros onde cada número representa a quantidade de neurônios em uma
+                                        camada oculta. Ex: [128, 64, 32] cria 3 camadas ocultas.
+            output_size (int): O número de neurônios na camada de saída.
+            activation (str): O nome da função de ativação a ser usada nas camadas ocultas
+                              (ex: 'relu', 'tanh', 'sigmoid', 'identity', 'softmax').
+            output_activation (str): O nome da função de ativação para a camada de saída 
+                                     (ex: 'relu', 'tanh', 'sigmoid', 'identity', 'softmax').
+            loss (str): O nome da função de perda a ser usada para o treinamento
+                        (ex: 'mse', 'binary', 'multiclass').
+        """
         self.activation_name = activation
         self.output_activation_name = output_activation
         self.loss_function_name = loss
@@ -69,8 +87,6 @@ class NeuralNetwork():
                 case "multiclass":
                     return loss_functions.multiclass_crossentropy
 
-
-
     def feedfoward(self, x_sample):
         y_predicted = x_sample.T
 
@@ -118,7 +134,6 @@ class NeuralNetwork():
             self.weights[l] -= dw[l]
             self.biases[l] -= db[l]
 
-
     def train(self, input_data, input_label, epochs, learning_rate=0.001):
         loss_history = []
         accuracy_history = []
@@ -137,28 +152,12 @@ class NeuralNetwork():
                 y_sample = input_label[i]
 
             predicted_y, cache = self.feedfoward(x_sample)
+
             train_loss = self.get_loss_function(self.loss_function_name, False)(y_sample, predicted_y)
             loss_history.append(train_loss)
             pred_history.append(predicted_y)
 
             self.backpropagate(y_sample, cache, x_sample, learning_rate)
-
-
-        if self.loss_function_name == "mse":
-            se = self.get_loss_function("mse", False)(input_label[:epoch], pred_history)
-        else:
-            for prediction in pred_history:
-                if self.loss_function_name == "binary":
-                    accuracy = (np.mean((prediction) > 0.5).astype(int) == y_sample) * 1
-                    accuracy_history.append(accuracy)
-                if self.loss_function_name == "multiclass":
-                    accuracy = np.mean(np.argmax(prediction, axis=1) == y_sample) * 1
-                    accuracy_history.append(accuracy)
-
-        if self.loss_function_name == 'binary' or self.loss_function_name == 'multiclass':
-            correct = accuracy_history.count(True)
-            total = len(accuracy_history)
-            acc = (correct/total)*100
         
     def predict(self, input_data, input_label=None):
         accuracy_history = []
