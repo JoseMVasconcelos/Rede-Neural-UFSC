@@ -13,7 +13,7 @@ Para abstrair o conceito de RNAs, foi criada a classe `NeuralNetwork`. Para a in
 
 https://github.com/JoseMVasconcelos/Rede-Neural-UFSC/blob/953485dd165e47e5c8e36600e1f8af31b997a3d3/neural_lib/neural_network.py#L7-L25
 
-Para treinamento da rede, o método `train` deve ser utilizado. Ele aceita como parâmetro os atributos (`input_data`) e as _labels_ (`input_label`) de treinamento, e a quantidade de épocas (`epochs`):
+Para treinamento da rede, o método `train` deve ser utilizado. Ele aceita como parâmetro os atributos (`input_data`) e as _labels_ (`input_label`) de treinamento, quantidade de épocas (`epochs`) e a taxa de aprendizado (`learning_rate`):
 
 https://github.com/JoseMVasconcelos/Rede-Neural-UFSC/blob/953485dd165e47e5c8e36600e1f8af31b997a3d3/neural_lib/neural_network.py#L148
 
