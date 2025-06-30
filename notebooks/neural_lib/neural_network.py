@@ -160,39 +160,45 @@ class NeuralNetwork():
             total = len(accuracy_history)
             acc = (correct/total)*100
         
-    def predict(self, input_data, input_label):
+    # Substitua o método predict por este:
+    def predict(self, input_data, input_label=None):
         accuracy_history = []
+        prediction_history = []
 
         for i in range(len(input_data)):
             if input_data[i].ndim == 1:
                 x_sample = input_data[i].reshape(1, -1)
             else:
                 x_sample = input_data[i]
-            if input_label[i].ndim == 1 or np.array(input_label[i]).ndim == 0:
-                y_sample = input_label[i].reshape(1, -1)
-            else:
-                y_sample = input_label[i]
 
+            # 1. Faz a predição PRIMEIRO, para ter o resultado independentemente do tipo de problema
             predicted_y, _ = self.feedfoward(x_sample)
+            prediction_history.append(predicted_y.flatten())
 
-            if self.loss_function_name == "binary":
+            # 2. SÓ DEPOIS, se as labels foram fornecidas (classificação), calcula a acurácia
+            if input_label is not None:
+                if input_label[i].ndim == 1 or np.array(input_label[i]).ndim == 0:
+                    y_sample = input_label[i].reshape(1, -1)
+                else:
+                    y_sample = input_label[i]
+
+                if self.loss_function_name == "binary":
                     accuracy = (np.mean((predicted_y) > 0.5).astype(int) == y_sample) * 1
                     accuracy_history.append(accuracy)
-            if self.loss_function_name == "multiclass":
-                accuracy = np.mean(np.argmax(predicted_y, axis=1) == y_sample) * 1
-                accuracy_history.append(accuracy)
+                elif self.loss_function_name == "multiclass":
+                    accuracy = np.mean(np.argmax(predicted_y, axis=1) == y_sample) * 1
+                    accuracy_history.append(accuracy)
 
+        # 3. Decide o que retornar com base na função de perda
+        if self.loss_function_name == "mse":
+            return np.concatenate(prediction_history)
         
-        if self.loss_function_name == "binary":
+        if self.loss_function_name in ["binary", "multiclass"]:
             correct = accuracy_history.count(True)
             total = len(accuracy_history)
-            acc = (correct/total)*100
-            return acc
-        
-        if self.loss_function_name == "multiclass":
-            correct = accuracy_history.count(True)
-            total = len(accuracy_history)
-            acc = (correct/total)*100
+            if total == 0:
+                return 0 # Evita divisão por zero se o input_label não for passado
+            acc = (correct/total) * 100
             return acc
 
 
