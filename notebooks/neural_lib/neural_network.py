@@ -135,9 +135,6 @@ class NeuralNetwork():
             self.biases[l] -= db[l]
 
     def train(self, input_data, input_label, epochs, learning_rate=0.001):
-        loss_history = []
-        accuracy_history = []
-        pred_history = []
 
         for epoch in range(epochs):
             i = epoch % len(input_data)
@@ -151,11 +148,7 @@ class NeuralNetwork():
             else:
                 y_sample = input_label[i]
 
-            predicted_y, cache = self.feedfoward(x_sample)
-
-            train_loss = self.get_loss_function(self.loss_function_name, False)(y_sample, predicted_y)
-            loss_history.append(train_loss)
-            pred_history.append(predicted_y)
+            _, cache = self.feedfoward(x_sample)
 
             self.backpropagate(y_sample, cache, x_sample, learning_rate)
         
