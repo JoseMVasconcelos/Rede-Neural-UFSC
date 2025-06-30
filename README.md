@@ -15,11 +15,11 @@ https://github.com/JoseMVasconcelos/Rede-Neural-UFSC/blob/953485dd165e47e5c8e366
 
 Para treinamento da rede, o método `train` deve ser utilizado. Ele aceita como parâmetro os atributos (`input_data`) e as _labels_ (`input_label`) de treinamento, quantidade de épocas (`epochs`) e a taxa de aprendizado (`learning_rate`):
 
-https://github.com/JoseMVasconcelos/Rede-Neural-UFSC/blob/953485dd165e47e5c8e36600e1f8af31b997a3d3/neural_lib/neural_network.py#L148
+https://github.com/JoseMVasconcelos/Rede-Neural-UFSC/blob/f340d43baea546c9b4ac736d6da840340680c327/notebooks/neural_lib/neural_network.py#L149
 
 Para predição de uma observação, o método `predict` deve ser executado:
 
-https://github.com/JoseMVasconcelos/Rede-Neural-UFSC/blob/953485dd165e47e5c8e36600e1f8af31b997a3d3/neural_lib/neural_network.py#L162
+https://github.com/JoseMVasconcelos/Rede-Neural-UFSC/blob/f340d43baea546c9b4ac736d6da840340680c327/notebooks/neural_lib/neural_network.py#L168
 
 ## Treinamento de Modelos com a Neural Network Library
 
