@@ -29,21 +29,22 @@ class NeuralNetwork():
         self.weights = []
         self.biases = []
 
-        #Iniciando pesos e vieses da primeira camada
+        #Iniciando pesos e vieses da primeira camada.
         self.weights.append(np.random.randn(input_size, hidden_sizes[0]) * np.sqrt(2 / input_size))
         self.biases.append(np.zeros((hidden_sizes[0], 1)))
 
-        #Iniciando pesos e vieses das camadas após a primeira, e antes da ultima
+        #Iniciando pesos e vieses das camadas intermediárias.
         for i in range(1, len(hidden_sizes)):
             self.weights.append(np.random.randn(hidden_sizes[i-1], hidden_sizes[i]) * np.sqrt(2 / hidden_sizes[i-1]))
             self.biases.append(np.zeros((hidden_sizes[i], 1)))
 
-        #Iniciando pesos e vieses da camada de output
+        #Iniciando pesos e vieses da camada de saída.
         self.weights.append(np.random.randn(hidden_sizes[-1], output_size) * np.sqrt(2 / hidden_sizes[-1]))
         self.biases.append(np.zeros((output_size, 1)))
 
 
     def get_activation_function(self, function_name, derivative):
+        # Retorna a função de ativação (ou sua derivada) correspondente ao nome.
         if derivative:
             match function_name:
                 case "relu":
@@ -70,6 +71,7 @@ class NeuralNetwork():
                     return activation_functions.identity
                 
     def get_loss_function(self, loss_name, derivative):
+        # Retorna a função de perda (ou sua derivada) para o tipo de problema.
         if derivative:
             match loss_name:
                 case "mse":
@@ -92,11 +94,16 @@ class NeuralNetwork():
 
         cache_stack = []
         for l in range(len(self.weights)):
+            # Cálculo da soma ponderada (Wx + b).
             v = np.dot(self.weights[l].T ,y_predicted) + self.biases[l]
+
+            # Aplica a função de ativação correta para a camada.
             if (l == len(self.weights) - 1):
                 y_predicted = self.get_activation_function(self.output_activation_name, False)(v)
             else:
                 y_predicted = self.get_activation_function(self.activation_name, False)(v)
+
+            # Armazena os valores para o backpropagation.    
             cache_stack.append((v, y_predicted))
 
         return y_predicted.T, cache_stack
@@ -107,6 +114,7 @@ class NeuralNetwork():
 
         v_last, act_last = cache.pop()
 
+        # Calcula o delta do erro na camada de saída (regra da cadeia).
         if self.loss_function_name == "binary":
             output_error = self.get_loss_function("binary", True)(y_sample, act_last) * self.get_activation_function("sigmoid", True)(v_last)
         if self.loss_function_name == "multiclass":
@@ -114,17 +122,21 @@ class NeuralNetwork():
         if self.loss_function_name == "mse":
             output_error = self.get_loss_function("mse", True)(y_sample, act_last) * self.get_activation_function("identity", True)(v_last)
 
+        # Propaga o erro para trás, da última para a primeira camada.
         for l in reversed(range(len(self.weights))):
             if l == 0:
                 a_previous = x_sample.T
             else:
                 v_previous, a_previous = cache.pop()
 
+            # Calcula os gradientes dos pesos e vieses.
             dw[l] = learning_rate * np.dot(a_previous, output_error.T)
             db[l] = learning_rate * np.sum(output_error, axis=0, keepdims=True)
 
+            # Passa o erro para a camada anterior.
             if l > 0:
                 output_error = np.dot(self.weights[l], output_error)
+
             if l - 1 == len(self.weights) - 1:
                  output_error *= self.get_activation_function(self.output_activation_name, True)(v_previous)
             else:
@@ -137,6 +149,7 @@ class NeuralNetwork():
     def train(self, input_data, input_label, epochs, learning_rate=0.001):
 
         for epoch in range(epochs):
+            # Gradiente descendente estocástico.
             i = epoch % len(input_data)
             if input_data[i].ndim == 1:
                 x_sample = input_data[i].reshape(1, -1)
@@ -148,8 +161,8 @@ class NeuralNetwork():
             else:
                 y_sample = input_label[i]
 
+            # Ciclo de aprendizado: prevê e depois ajusta.
             _, cache = self.feedfoward(x_sample)
-
             self.backpropagate(y_sample, cache, x_sample, learning_rate)
         
     def predict(self, input_data, input_label=None):
@@ -165,6 +178,7 @@ class NeuralNetwork():
             predicted_y, _ = self.feedfoward(x_sample)
             prediction_history.append(predicted_y.flatten())
 
+            # Se os rótulos forem fornecidos, calcula a acurácia (para classificação).
             if input_label is not None:
                 if input_label[i].ndim == 1 or np.array(input_label[i]).ndim == 0:
                     y_sample = input_label[i].reshape(1, -1)
@@ -178,6 +192,7 @@ class NeuralNetwork():
                     accuracy = np.mean(np.argmax(predicted_y, axis=1) == y_sample) * 1
                     accuracy_history.append(accuracy)
 
+        # Retorna o valor apropriado com base no tipo de problema.
         if self.loss_function_name == "mse":
             return np.concatenate(prediction_history)
         
